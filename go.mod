@@ -2,7 +2,12 @@ module test-task
 
 go 1.25.0
 
-require github.com/elastic/go-elasticsearch/v8 v8.19.6
+require (
+	github.com/elastic/go-elasticsearch/v8 v8.19.6
+	github.com/jmoiron/sqlx v1.4.0
+	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.12.3
+)
 
 require (
 	github.com/elastic/elastic-transport-go/v8 v8.9.0 // indirect
