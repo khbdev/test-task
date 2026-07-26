@@ -8,6 +8,7 @@ import (
 	"test-task/internal/repostory/database"
 	"test-task/internal/repostory/elastic"
 
+	"github.com/google/uuid"
 	_ "github.com/google/uuid"
 )
 
@@ -23,13 +24,19 @@ func NewProductService(productRepo *database.ProductRepository, elasticRepo *ela
 	}
 }
 
-func (s *ProductService) BulkProductUpsert(ctx context.Context, products []service.Product) error {
+func (s *ProductService) BulkProductUpsert(ctx context.Context, companyID string, products []service.Product) error {
 
 	uniqueProducts := make(map[string]service.Product)
 
 	for _, product := range products {
 
-		key := product.CompanyID + "_" + product.SKU
+		product.CompanyID = companyID
+
+		if product.ID == "" {
+			product.ID = uuid.New().String()
+		}
+
+		key := companyID + "_" + product.SKU
 
 		uniqueProducts[key] = product
 	}
@@ -79,10 +86,27 @@ func (s *ProductService) BulkProductUpsert(ctx context.Context, products []servi
 		})
 	}
 
-	err = s.elasticRepo.BulkProductUpsert(
+	return s.elasticRepo.BulkProductUpsert(
 		ctx,
 		documents,
 	)
+}
 
-	return err
+func (s *ProductService) SearchProducts(
+	ctx context.Context,
+	companyID string,
+	q string,
+) ([]elasticc.ProductDocument, error) {
+
+	products, err := s.elasticRepo.SearchProducts(
+		ctx,
+		companyID,
+		q,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
 }

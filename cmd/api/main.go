@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	api_server "test-task/api-server"
 	"test-task/internal/config"
+	"test-task/internal/handler"
 	"test-task/internal/repostory/database"
 	"test-task/internal/repostory/elastic"
 	"test-task/internal/service"
@@ -29,6 +31,10 @@ func main() {
 
 	productService := service.NewProductService(productRepo, productElastic)
 
+	productHandler := handler.NewProductHandler(productService)
 
+	router := api_server.NewRouter(productHandler)
+
+	router.Run(":8083")
 
 }
