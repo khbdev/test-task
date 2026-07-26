@@ -94,8 +94,7 @@ func (s *ProductService) BulkProductUpsert(ctx context.Context, companyID string
 
 func (s *ProductService) SearchProducts(
 	ctx context.Context,
-	companyID string,
-	q string,
+	companyID string, q string,
 ) ([]elasticc.ProductDocument, error) {
 
 	products, err := s.elasticRepo.SearchProducts(
@@ -109,4 +108,27 @@ func (s *ProductService) SearchProducts(
 	}
 
 	return products, nil
+}
+
+func (s *ProductService) DeleteProducts(
+	ctx context.Context,
+	companyID string, ids []string,
+) error {
+
+	err := s.productRepo.DeleteProducts(
+		ctx,
+		companyID,
+		ids,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	err = s.elasticRepo.DeleteProducts(
+		ctx,
+		ids,
+	)
+
+	return err
 }

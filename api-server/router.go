@@ -11,6 +11,12 @@ func NewRouter(productHandler *handler.ProductHandler) *gin.Engine {
 	r := gin.Default()
 
 	r.POST("/products/bulk", productHandler.BulkProductUpsert)
-
+	r.GET("/products/search",
+		productHandler.SearchProducts,
+	)
+	r.DELETE(
+		"/products",
+		productHandler.DeleteProducts,
+	)
 	return r
 }

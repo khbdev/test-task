@@ -64,3 +64,86 @@ func (h *ProductHandler) BulkProductUpsert(c *gin.Context) {
 		"products upserted",
 	)
 }
+
+func (h *ProductHandler) SearchProducts(c *gin.Context) {
+
+	companyID := c.GetHeader("X-Company-Id")
+
+	if companyID == "" {
+		core.Error(
+			c,
+			http.StatusBadRequest,
+			errors.New("company id required"),
+		)
+		return
+	}
+
+	q := c.Query("q")
+
+	products, err := h.service.SearchProducts(
+		c.Request.Context(),
+		companyID,
+		q,
+	)
+
+	if err != nil {
+		core.Error(
+			c,
+			http.StatusInternalServerError,
+			err,
+		)
+		return
+	}
+
+	core.Success(
+		c,
+		http.StatusOK,
+		products,
+	)
+}
+
+func (h *ProductHandler) DeleteProducts(c *gin.Context) {
+
+	companyID := c.GetHeader("X-Company-Id")
+
+	if companyID == "" {
+		core.Error(
+			c,
+			http.StatusBadRequest,
+			errors.New("company id required"),
+		)
+		return
+	}
+
+	var ids []string
+
+	if err := c.ShouldBindJSON(&ids); err != nil {
+		core.Error(
+			c,
+			http.StatusBadRequest,
+			err,
+		)
+		return
+	}
+
+	err := h.service.DeleteProducts(
+		c.Request.Context(),
+		companyID,
+		ids,
+	)
+
+	if err != nil {
+		core.Error(
+			c,
+			http.StatusInternalServerError,
+			err,
+		)
+		return
+	}
+
+	core.Success(
+		c,
+		http.StatusOK,
+		"products deleted",
+	)
+}

@@ -5,6 +5,7 @@ import (
 	"test-task/internal/models/repostory"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type ProductRepository struct {
@@ -54,4 +55,53 @@ retail_price = EXCLUDED.retail_price;`
 	)
 
 	return err
+}
+
+func (r *ProductRepository) DeleteProducts(ctx context.Context, companyID string, ids []string) error {
+
+	tx, err := r.db.BeginTxx(ctx, nil)
+
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	// slotlarni bo'shatish
+
+	_, err = tx.ExecContext(
+		ctx,
+		`
+		UPDATE shelf_slots
+		SET product_id = NULL
+		WHERE company_id = $1
+		AND product_id = ANY($2)
+		`,
+		companyID,
+		pq.Array(ids),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	// soft delete
+
+	_, err = tx.ExecContext(
+		ctx,
+		`
+		UPDATE products
+		SET deleted_at = NOW()
+		WHERE company_id = $1
+		AND id = ANY($2)
+		`,
+		companyID,
+		pq.Array(ids),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }

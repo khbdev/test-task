@@ -61,29 +61,29 @@ func (r *ProductRepository) BulkProductUpsert(ctx context.Context, products []el
 func (r *ProductRepository) SearchProducts(ctx context.Context, companyID string, q string) ([]elasticc.ProductDocument, error) {
 
 	query := fmt.Sprintf(`
-	{
-		"query": {
-			"bool": {
-				"must": {
-					"multi_match": {
-						"query": "%s",
-						"fields": [
-							"name",
-							"sku",
-							"barcode",
-							"slot"
-						],
-						"fuzziness": "AUTO"
-					}
-				},
-				"filter": {
-					"term": {
-						"company_id.keyword": "%s"
-					}
+{
+	"query": {
+		"bool": {
+			"must": {
+				"multi_match": {
+					"query": "%s",
+					"fields": [
+						"name",
+						"sku",
+						"barcode",
+						"slot"
+					],
+					"fuzziness": "AUTO"
+				}
+			},
+			"filter": {
+				"match": {
+					"company_id": "%s"
 				}
 			}
 		}
-	}`, q, companyID)
+	}
+}`, q, companyID)
 
 	res, err := r.client.Search(
 		r.client.Search.WithContext(ctx),
@@ -116,4 +116,42 @@ func (r *ProductRepository) SearchProducts(ctx context.Context, companyID string
 	}
 
 	return products, nil
+}
+
+func (r *ProductRepository) DeleteProducts(ctx context.Context, ids []string) error {
+
+	var buf bytes.Buffer
+
+	for _, id := range ids {
+
+		meta := []byte(
+			fmt.Sprintf(
+				`{"delete":{"_index":"products","_id":"%s"}}`,
+				id,
+			),
+		)
+
+		buf.Write(meta)
+		buf.WriteByte('\n')
+	}
+
+	res, err := r.client.Bulk(
+		bytes.NewReader(buf.Bytes()),
+		r.client.Bulk.WithContext(ctx),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return fmt.Errorf(
+			"elastic bulk delete error: %s",
+			res.String(),
+		)
+	}
+
+	return nil
 }
