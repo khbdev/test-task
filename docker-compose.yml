@@ -1,0 +1,54 @@
+services:
+  api:
+    image: gopherkhb/test-task-api:latest
+    container_name: test-task-api
+    ports:
+      - "8083:8083"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: secret
+      DB_NAME: test_task
+
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+
+    depends_on:
+      - postgres
+      - elasticsearch
+
+
+  postgres:
+    image: postgres:17
+    container_name: test-task-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: test_task
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.3
+    container_name: test-task-elasticsearch
+
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+
+    ports:
+      - "9200:9200"
+
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+
+
+volumes:
+  postgres_data:
+  elastic_data:

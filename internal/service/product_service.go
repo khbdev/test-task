@@ -81,6 +81,7 @@ func (s *ProductService) BulkProductUpsert(ctx context.Context, companyID string
 			Name:        product.Name,
 			SKU:         product.SKU,
 			Barcode:     product.Barcode,
+			SupplyPrice: product.SupplyPrice,
 			RetailPrice: product.RetailPrice,
 			Slot:        "",
 		})

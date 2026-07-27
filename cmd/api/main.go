@@ -10,14 +10,13 @@ import (
 	"test-task/internal/service"
 
 	"github.com/joho/godotenv"
-	_ "github.com/joho/godotenv"
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file, using environment variables")
 	}
-
 	postgresDatabase := config.NewPostgresConnection()
 
 	_ = postgresDatabase

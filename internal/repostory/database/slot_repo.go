@@ -63,7 +63,13 @@ func (r *ShelfSlotRepository) UpdateSlots(ctx context.Context, companyID string,
 	return tx.Commit()
 }
 
-func (r *ShelfSlotRepository) GetSlots(ctx context.Context, companyID string, page int, limit int, search string) ([]repostory.ShelfSlotGET, int, error) {
+func (r *ShelfSlotRepository) GetSlots(
+	ctx context.Context,
+	companyID string,
+	page int,
+	limit int,
+	search string,
+) ([]repostory.ShelfSlotGET, int, error) {
 
 	offset := (page - 1) * limit
 
@@ -72,7 +78,6 @@ func (r *ShelfSlotRepository) GetSlots(ctx context.Context, companyID string, pa
 	err := r.db.GetContext(ctx, &total, `
 		SELECT COUNT(*)
 		FROM shelf_slots ss
-		LEFT JOIN products p ON p.id = ss.product_id
 		WHERE ss.company_id=$1
 	`, companyID)
 
@@ -84,9 +89,13 @@ func (r *ShelfSlotRepository) GetSlots(ctx context.Context, companyID string, pa
 
 	err = r.db.SelectContext(ctx, &slots, `
 		SELECT
+			ss.id,
 			ss.slot,
+			ss.product_id,
 			p.name,
 			p.sku,
+			p.barcode,
+			p.supply_price,
 			p.retail_price
 		FROM shelf_slots ss
 		LEFT JOIN products p
@@ -109,4 +118,36 @@ func (r *ShelfSlotRepository) GetSlots(ctx context.Context, companyID string, pa
 	)
 
 	return slots, total, err
+}
+
+func (r *ShelfSlotRepository) StockValue(
+	ctx context.Context, companyID string,
+) (*repostory.StockValueReport, error) {
+
+	var result repostory.StockValueReport
+
+	err := r.db.GetContext(ctx, &result, `
+		SELECT
+			COALESCE(SUM(p.supply_price),0) AS supply_total,
+
+			COUNT(ss.product_id) AS occupied,
+
+			COUNT(*) - COUNT(ss.product_id) AS empty
+
+		FROM shelf_slots ss
+
+		LEFT JOIN products p
+			ON p.id = ss.product_id
+			AND p.deleted_at IS NULL
+
+		WHERE ss.company_id = $1
+	`,
+		companyID,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }

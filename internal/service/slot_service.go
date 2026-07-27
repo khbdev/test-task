@@ -79,3 +79,13 @@ func (s *SlotService) GetSlots(
 		search,
 	)
 }
+
+func (s *SlotService) StockValue(
+	ctx context.Context, companyID string,
+) (*repostory.StockValueReport, error) {
+
+	return s.slotRepo.StockValue(
+		ctx,
+		companyID,
+	)
+}

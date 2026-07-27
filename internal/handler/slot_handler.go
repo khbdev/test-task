@@ -117,3 +117,22 @@ func (h *SlotHandler) GetSlots(c *gin.Context) {
 		"total": total,
 	})
 }
+
+func (h *SlotHandler) StockValue(c *gin.Context) {
+
+	data, err := h.service.StockValue(
+		c,
+		c.GetHeader("X-Company-Id"),
+	)
+
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"data": data,
+	})
+}

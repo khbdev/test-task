@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"test-task/internal/core"
 	"test-task/internal/models/service"
@@ -42,6 +43,7 @@ func (h *ProductHandler) BulkProductUpsert(c *gin.Context) {
 		)
 		return
 	}
+	fmt.Println(products)
 
 	err := h.service.BulkProductUpsert(
 		c.Request.Context(),

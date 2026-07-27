@@ -24,5 +24,9 @@ func NewRouter(productHandler *handler.ProductHandler, slotHandler *handler.Slot
 		"/slots",
 		slotHandler.GetSlots,
 	)
+	r.GET(
+		"/reports/stock-value",
+		slotHandler.StockValue,
+	)
 	return r
 }
