@@ -67,7 +67,7 @@ func (r *ProductRepository) DeleteProducts(ctx context.Context, companyID string
 
 	defer tx.Rollback()
 
-	// slotlarni bo'shatish
+
 
 	_, err = tx.ExecContext(
 		ctx,
@@ -85,7 +85,7 @@ func (r *ProductRepository) DeleteProducts(ctx context.Context, companyID string
 		return err
 	}
 
-	// soft delete
+
 
 	_, err = tx.ExecContext(
 		ctx,

@@ -6,7 +6,7 @@ import (
 	"test-task/internal/handler"
 )
 
-func NewRouter(productHandler *handler.ProductHandler) *gin.Engine {
+func NewRouter(productHandler *handler.ProductHandler, slotHandler *handler.SlotHandler) *gin.Engine {
 
 	r := gin.Default()
 
@@ -17,6 +17,12 @@ func NewRouter(productHandler *handler.ProductHandler) *gin.Engine {
 	r.DELETE(
 		"/products",
 		productHandler.DeleteProducts,
+	)
+	r.PUT("/slots", slotHandler.UpdateSlots)
+
+	r.GET(
+		"/slots",
+		slotHandler.GetSlots,
 	)
 	return r
 }

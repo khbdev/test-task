@@ -27,13 +27,16 @@ func main() {
 	elastic.BootstrapIndex(elasticsearchClient)
 
 	productRepo := database.NewProductRepository(postgresDatabase)
+	slotRepo := database.NewShelfSlotRepository(postgresDatabase)
 	productElastic := elastic.NewProductRepository(elasticsearchClient)
+	slotElastic := elastic.NewSlotRepository(elasticsearchClient)
 
 	productService := service.NewProductService(productRepo, productElastic)
+	slotService := service.NewSlotService(slotRepo, slotElastic)
 
 	productHandler := handler.NewProductHandler(productService)
-
-	router := api_server.NewRouter(productHandler)
+	slotHandler := handler.NewSlotHandler(slotService)
+	router := api_server.NewRouter(productHandler, slotHandler)
 
 	router.Run(":8083")
 
